@@ -2,6 +2,9 @@ import { BN, fromWei, toWei } from 'web3-utils'
 import ether from './helpers/ether'
 import EVMRevert from './helpers/EVMRevert'
 import { duration } from './helpers/duration'
+import { PairHash } from '../config'
+
+
 const BigNumber = BN
 const timeMachine = require('ganache-time-traveler')
 
@@ -26,7 +29,7 @@ const Stake = artifacts.require('./Stake.sol')
 const Fetch = artifacts.require('./Fetch.sol')
 const NFT = artifacts.require('./NFT.sol')
 
-const PairHash = "0xc84da477d7d2e754b95ea0021236517e3592e08dfe083630d97b7c28511bf9a8"
+
 const Beneficiary = "0x6ffFe11A5440fb275F30e0337Fc296f938a287a5"
 
 let pancakeFactory,
@@ -79,7 +82,6 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
       userOne
     )
 
-
     fetch = await Fetch.new(
       weth.address,
       pancakeRouter.address,
@@ -97,6 +99,9 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
     // send some tokens to another users
     await token.transfer(userTwo, toWei(String(1)))
     await token.transfer(userThree, toWei(String(1)))
+
+    // transfer ownership from nft to stake
+    await nft.transferOwnership(stake.address)
   }
 
   beforeEach(async function() {
@@ -136,16 +141,9 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
       assert.equal(await stake.rewardsToken(), token.address)
       assert.equal(await stake.stakingToken(), pair.address)
     })
+
     it('token should be added in LD DEX', async function() {
       assert.equal(await pair.totalSupply(), toWei(String(500)))
-    })
-  })
-
-  describe('token', function() {
-    it('Can be burned', async function() {
-      assert.equal(Number(await token.totalSupply()), toWei(String(100000)))
-      await token.burn(toWei(String(50000)))
-      assert.equal(Number(await token.totalSupply()), toWei(String(50000)))
     })
   })
 
@@ -158,7 +156,7 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
       // approve token
       await token.approve(fetch.address, toWei(String(0.1)), { from:userTwo })
       // deposit
-      await fetch.depositETHAndERC20(true, toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
+      await fetch.depositETHAndERC20(toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
       // fetch send all pool
       assert.equal(Number(await pair.balanceOf(fetch.address)), 0)
       // fetch send all shares
@@ -181,7 +179,7 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
       // approve token
       await token.approve(fetch.address, toWei(String(0.1)), { from:userTwo })
       // deposit
-      await fetch.depositETHAndERC20(true, toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
+      await fetch.depositETHAndERC20(toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
       // shares should be equal to pool depsoit
       const staked = await pair.balanceOf(stake.address)
       const shares = await stake.balanceOf(userTwo)
@@ -206,7 +204,7 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
       // approve token
       await token.approve(fetch.address, toWei(String(0.1)), { from:userTwo })
       // deposit
-      await fetch.depositETHAndERC20(true, toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
+      await fetch.depositETHAndERC20(toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
       // get staked amount
       const staked = await pair.balanceOf(stake.address)
       // staked should be more than 0
@@ -238,7 +236,7 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
       // approve token
       await token.approve(fetch.address, toWei(String(0.1)), { from:userTwo })
       // deposit
-      await fetch.depositETHAndERC20(true, toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
+      await fetch.depositETHAndERC20(toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
       // clear user 2 balance
       await token.transfer(userOne, await token.balanceOf(userTwo), {from:userTwo})
       assert.equal(await token.balanceOf(userTwo), 0)
@@ -247,7 +245,7 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
       // approve token
       await token.approve(fetch.address, toWei(String(0.1)), { from:userThree })
       // deposit
-      await fetch.depositETHAndERC20(true, toWei(String(0.1)), { from:userThree, value:toWei(String(0.1)) })
+      await fetch.depositETHAndERC20(toWei(String(0.1)), { from:userThree, value:toWei(String(0.1)) })
       // clear user 3 balance
       await token.transfer(userOne, await token.balanceOf(userThree), {from:userThree})
       assert.equal(await token.balanceOf(userThree), 0)
@@ -278,7 +276,7 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
       // approve token
       await token.approve(fetch.address, toWei(String(500)), { from:userOne })
       // deposit
-      await fetch.depositETHAndERC20(true, toWei(String(500)), { from:userOne, value:toWei(String(500)) })
+      await fetch.depositETHAndERC20(toWei(String(500)), { from:userOne, value:toWei(String(500)) })
       // user 1 get shares
       assert.notEqual(Number(await stake.balanceOf(userOne)), 0)
 
@@ -288,7 +286,7 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
       // approve token
       await token.approve(fetch.address, toWei(String(0.001)), { from:userTwo })
       // deposit
-      await fetch.depositETHAndERC20(true, toWei(String(0.001)), { from:userTwo, value:toWei(String(0.001)) })
+      await fetch.depositETHAndERC20(toWei(String(0.001)), { from:userTwo, value:toWei(String(0.001)) })
       // user 2 get shares
       assert.notEqual(Number(await stake.balanceOf(userTwo)), 0)
     })
@@ -299,7 +297,7 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
 
       for(let i=0; i<100;i++){
         const sharesBefore = Number(await stake.balanceOf(userOne))
-        await fetch.depositETHAndERC20(true, toWei(String(0.01)), { from:userOne, value:toWei(String(0.01)) })
+        await fetch.depositETHAndERC20(toWei(String(0.01)), { from:userOne, value:toWei(String(0.01)) })
         assert.isTrue(
           Number(await stake.balanceOf(userOne)) > sharesBefore
         )
@@ -314,7 +312,7 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
       // stake don't have any pool yet
       assert.equal(Number(await pair.balanceOf(stake.address)), 0)
       // deposit
-      await fetch.deposit(true, { from:userTwo, value:toWei(String(1)) })
+      await fetch.deposit({ from:userTwo, value:toWei(String(1)) })
       // fetch send all pool
       assert.equal(Number(await pair.balanceOf(fetch.address)), 0)
       // fetch send all shares
@@ -335,7 +333,7 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
       // user not hold any pool
       assert.equal(Number(await pair.balanceOf(userTwo)), 0)
       // deposit
-      await fetch.deposit(true, { from:userTwo, value:toWei(String(1)) })
+      await fetch.deposit({ from:userTwo, value:toWei(String(1)) })
       // shares should be equal to pool depsoit
       const staked = await pair.balanceOf(stake.address)
       const shares = await stake.balanceOf(userTwo)
@@ -358,7 +356,7 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
       // user not hold any pool
       assert.equal(Number(await pair.balanceOf(userTwo)), 0)
       // deposit
-      await fetch.deposit(true, { from:userTwo, value:toWei(String(1)) })
+      await fetch.deposit({ from:userTwo, value:toWei(String(1)) })
       // get staked amount
       const staked = await pair.balanceOf(stake.address)
       // staked should be more than 0
@@ -387,13 +385,13 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
       assert.equal(Number(await pair.balanceOf(userTwo)), 0)
 
       // deposit form user 2
-      await fetch.deposit(true, { from:userTwo, value:toWei(String(1)) })
+      await fetch.deposit({ from:userTwo, value:toWei(String(1)) })
       // clear user 2 balance
       await token.transfer(userOne, await token.balanceOf(userTwo), {from:userTwo})
       assert.equal(await token.balanceOf(userTwo), 0)
 
       // deposit form user 3
-      await fetch.deposit(true, { from:userThree, value:toWei(String(1)) })
+      await fetch.deposit({ from:userThree, value:toWei(String(1)) })
       // clear user 3 balance
       await token.transfer(userOne, await token.balanceOf(userThree), {from:userThree})
       assert.equal(await token.balanceOf(userThree), 0)
@@ -422,14 +420,14 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
       // user 1 not hold any shares
       assert.equal(Number(await stake.balanceOf(userOne)), 0)
       // deposit form user 1
-      await fetch.deposit(true, { from:userOne, value:toWei(String(500)) })
+      await fetch.deposit({ from:userOne, value:toWei(String(500)) })
       // user 1 get shares
       assert.notEqual(Number(await stake.balanceOf(userOne)), 0)
 
       // user 2 not hold any shares
       assert.equal(Number(await stake.balanceOf(userTwo)), 0)
       // deposit form user 2
-      await fetch.deposit(true, { from:userTwo, value:toWei(String(0.001)) })
+      await fetch.deposit({ from:userTwo, value:toWei(String(0.001)) })
       // user 2 get shares
       assert.notEqual(Number(await stake.balanceOf(userTwo)), 0)
     })
@@ -437,7 +435,7 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
     it('token fetch can handle many deposits ', async function() {
       for(let i=0; i<100;i++){
         const sharesBefore = Number(await stake.balanceOf(userOne))
-        await fetch.deposit(true, { from:userOne, value:toWei(String(0.01)) })
+        await fetch.deposit({ from:userOne, value:toWei(String(0.01)) })
         assert.isTrue(
           Number(await stake.balanceOf(userOne)) > sharesBefore
         )

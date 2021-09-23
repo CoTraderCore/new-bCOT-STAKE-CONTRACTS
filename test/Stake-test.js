@@ -37,7 +37,7 @@ let uniswapV2Factory,
     nft
 
 
-contract('Stake-without-nft-order', function([userOne, userTwo, userThree]) {
+contract('Stake', function([userOne, userTwo, userThree]) {
 
   async function deployContracts(){
     // deploy contracts
