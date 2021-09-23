@@ -51,28 +51,28 @@ contract Fetch is Ownable {
   }
 
   // deposit only ETH
-  function deposit(bool _isClaimAbleStake) external payable {
+  function deposit() external payable {
     require(msg.value > 0, "zerro eth");
     // swap ETH
     swapETHInput(msg.value);
     // deposit and stake
-    _depositFor(_isClaimAbleStake, msg.sender);
+    _depositFor(msg.sender);
   }
 
   // deposit only ETH for a certain address
-  function depositFor(bool _isClaimAbleStake, address receiver) external payable {
+  function depositFor(address receiver) external payable {
     require(msg.value > 0, "zerro eth");
     // swap ETH
     swapETHInput(msg.value);
     // deposit and stake
-    _depositFor(_isClaimAbleStake, receiver);
+    _depositFor(receiver);
   }
 
   // deposit ETH and token without convert
-  function depositETHAndERC20(bool _isClaimAbleStake, uint256 tokenAmount) external payable {
+  function depositETHAndERC20(uint256 tokenAmount) external payable {
     IERC20(token).safeTransferFrom(msg.sender, address(this), tokenAmount);
     // deposit and stake
-    _depositFor(_isClaimAbleStake, msg.sender);
+    _depositFor(msg.sender);
   }
 
   /**
@@ -143,7 +143,7 @@ contract Fetch is Ownable {
  function swapETHInput(uint256 input) internal {
    // determining the portion of the incoming ETH to be converted to the ERC20 Token
    uint256 conversionPortion = input.mul(505).div(1000);
-   swapETHViaDEX(pancakeRouter, conversionPortion);     
+   swapETHViaDEX(pancakeRouter, conversionPortion);
  }
 
  // helper for swap via dex

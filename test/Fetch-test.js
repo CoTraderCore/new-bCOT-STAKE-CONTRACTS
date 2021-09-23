@@ -103,346 +103,346 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
     await deployContracts()
   })
 
-  // describe('INIT', function() {
-  //   it('PairHash correct', async function() {
-  //     assert.equal(
-  //       String(await pancakeFactory.pairCodeHash()).toLowerCase(),
-  //       String(PairHash).toLowerCase(),
-  //     )
-  //   })
-  //
-  //   it('Factory in Router correct', async function() {
-  //     assert.equal(
-  //       String(await pancakeRouter.factory()).toLowerCase(),
-  //       String(pancakeFactory.address).toLowerCase(),
-  //     )
-  //   })
-  //
-  //   it('WETH in Router correct', async function() {
-  //     assert.equal(
-  //       String(await pancakeRouter.WETH()).toLowerCase(),
-  //       String(weth.address).toLowerCase(),
-  //     )
-  //   })
-  //
-  //   it('Correct init token supply', async function() {
-  //     assert.equal(
-  //       await token.totalSupply(),
-  //       toWei(String(100000)),
-  //     )
-  //   })
-  //
-  //   it('Correct init claim Stake', async function() {
-  //     assert.equal(await stake.rewardsToken(), token.address)
-  //     assert.equal(await stake.stakingToken(), pair.address)
-  //   })
-  //   it('token should be added in LD DEX', async function() {
-  //     assert.equal(await pair.totalSupply(), toWei(String(500)))
-  //   })
-  // })
+  describe('INIT', function() {
+    it('PairHash correct', async function() {
+      assert.equal(
+        String(await pancakeFactory.pairCodeHash()).toLowerCase(),
+        String(PairHash).toLowerCase(),
+      )
+    })
 
-  // describe('token', function() {
-  //   it('Can be burned', async function() {
-  //     assert.equal(Number(await token.totalSupply()), toWei(String(100000)))
-  //     await token.burn(toWei(String(50000)))
-  //     assert.equal(Number(await token.totalSupply()), toWei(String(50000)))
-  //   })
-  // })
+    it('Factory in Router correct', async function() {
+      assert.equal(
+        String(await pancakeRouter.factory()).toLowerCase(),
+        String(pancakeFactory.address).toLowerCase(),
+      )
+    })
 
-  // describe('CLAIM ABLE token fetch WITH DEPOSIT WITH token', function() {
-  //   it('Convert input to pool and stake via token fetch and fetch send all shares and remains back to user', async function() {
-  //     // user two not hold any pool before deposit
-  //     assert.equal(Number(await pair.balanceOf(userTwo)), 0)
-  //     // stake don't have any pool yet
-  //     assert.equal(Number(await pair.balanceOf(stake.address)), 0)
-  //     // approve token
-  //     await token.approve(fetch.address, toWei(String(0.1)), { from:userTwo })
-  //     // deposit
-  //     await fetch.depositETHAndERC20(true, toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
-  //     // fetch send all pool
-  //     assert.equal(Number(await pair.balanceOf(fetch.address)), 0)
-  //     // fetch send all shares
-  //     assert.equal(Number(await stake.balanceOf(fetch.address)), 0)
-  //     // fetch send all ETH remains
-  //     assert.equal(Number(await web3.eth.getBalance(fetch.address)), 0)
-  //     // fetch send all WETH remains
-  //     assert.equal(Number(await weth.balanceOf(fetch.address)), 0)
-  //     // fetch send all token
-  //     assert.equal(Number(await token.balanceOf(fetch.address)), 0)
-  //     // stake should receive pool
-  //     assert.notEqual(Number(await pair.balanceOf(stake.address)), 0)
-  //     // user should receive token shares
-  //     assert.notEqual(Number(await stake.balanceOf(userTwo)), 0)
-  //   })
-  //
-  //   it('User can withdraw converted pool via fetch from vault', async function() {
-  //     // user not hold any pool
-  //     assert.equal(Number(await pair.balanceOf(userTwo)), 0)
-  //     // approve token
-  //     await token.approve(fetch.address, toWei(String(0.1)), { from:userTwo })
-  //     // deposit
-  //     await fetch.depositETHAndERC20(true, toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
-  //     // shares should be equal to pool depsoit
-  //     const staked = await pair.balanceOf(stake.address)
-  //     const shares = await stake.balanceOf(userTwo)
-  //     // staked and shares should be equal
-  //     assert.equal(Number(shares), Number(staked))
-  //     // withdraw
-  //     await stake.withdraw(shares, { from:userTwo })
-  //     // vault should burn shares
-  //     assert.equal(await stake.balanceOf(userTwo), 0)
-  //     // stake send all tokens
-  //     assert.equal(Number(await pair.balanceOf(stake.address)), 0)
-  //     // vault should send user token
-  //     assert.equal(
-  //       Number(await pair.balanceOf(userTwo)),
-  //       Number(staked)
-  //     )
-  //   })
-  //
-  //   it('User claim correct rewards and pool amount after exit', async function() {
-  //     // user not hold any pool
-  //     assert.equal(Number(await pair.balanceOf(userTwo)), 0)
-  //     // approve token
-  //     await token.approve(fetch.address, toWei(String(0.1)), { from:userTwo })
-  //     // deposit
-  //     await fetch.depositETHAndERC20(true, toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
-  //     // get staked amount
-  //     const staked = await pair.balanceOf(stake.address)
-  //     // staked should be more than 0
-  //     assert.isTrue(staked > 0)
-  //     // clear user balance
-  //     await token.transfer(userOne, await token.balanceOf(userTwo), {from:userTwo})
-  //     assert.equal(await token.balanceOf(userTwo), 0)
-  //
-  //     await timeMachine.advanceTimeAndBlock(duration.days(31))
-  //     // estimate rewards
-  //     const estimateReward = await stake.earned(userTwo)
-  //     // get user shares
-  //     const shares = await stake.balanceOf(userTwo)
-  //     // withdraw
-  //     await stake.exit({ from:userTwo })
-  //     // user should get reward
-  //     assert.equal(Number(await token.balanceOf(userTwo)), Number(estimateReward))
-  //     // user get pool
-  //     assert.equal(Number(await pair.balanceOf(userTwo)), staked)
-  //     // stake send all address
-  //     assert.equal(Number(await pair.balanceOf(stake.address)), 0)
-  //   })
-  //
-  //   it('Claim rewards calculates correct for a few users after exit ', async function() {
-  //     // user not hold any pool
-  //     assert.equal(Number(await pair.balanceOf(userTwo)), 0)
-  //
-  //     // deposit form user 2
-  //     // approve token
-  //     await token.approve(fetch.address, toWei(String(0.1)), { from:userTwo })
-  //     // deposit
-  //     await fetch.depositETHAndERC20(true, toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
-  //     // clear user 2 balance
-  //     await token.transfer(userOne, await token.balanceOf(userTwo), {from:userTwo})
-  //     assert.equal(await token.balanceOf(userTwo), 0)
-  //
-  //     // deposit form user 3
-  //     // approve token
-  //     await token.approve(fetch.address, toWei(String(0.1)), { from:userThree })
-  //     // deposit
-  //     await fetch.depositETHAndERC20(true, toWei(String(0.1)), { from:userThree, value:toWei(String(0.1)) })
-  //     // clear user 3 balance
-  //     await token.transfer(userOne, await token.balanceOf(userThree), {from:userThree})
-  //     assert.equal(await token.balanceOf(userThree), 0)
-  //
-  //     // increase time
-  //     await timeMachine.advanceTimeAndBlock(duration.days(31))
-  //
-  //     // estimate rewards
-  //     const estimateRewardTwo = await stake.earned(userTwo)
-  //     const estimateRewardThree = await stake.earned(userThree)
-  //
-  //     assert.isTrue(estimateRewardTwo > toWei(String(0.49)))
-  //     assert.isTrue(estimateRewardThree > toWei(String(0.49)))
-  //
-  //     // withdraw
-  //     await stake.exit({ from:userTwo })
-  //     await stake.exit({ from:userThree })
-  //
-  //     // users should get reward
-  //     assert.equal(Number(await token.balanceOf(userTwo)), Number(estimateRewardTwo))
-  //     assert.equal(Number(await token.balanceOf(userThree)), Number(estimateRewardThree))
-  //   })
-  //
-  //   it('token fetch can handle big deposit and after this users can continue do many small deposits ', async function() {
-  //     // user 1 not hold any shares
-  //     assert.equal(Number(await stake.balanceOf(userOne)), 0)
-  //     // deposit form user 1
-  //     // approve token
-  //     await token.approve(fetch.address, toWei(String(500)), { from:userOne })
-  //     // deposit
-  //     await fetch.depositETHAndERC20(true, toWei(String(500)), { from:userOne, value:toWei(String(500)) })
-  //     // user 1 get shares
-  //     assert.notEqual(Number(await stake.balanceOf(userOne)), 0)
-  //
-  //     // user 2 not hold any shares
-  //     assert.equal(Number(await stake.balanceOf(userTwo)), 0)
-  //     // deposit form user 2
-  //     // approve token
-  //     await token.approve(fetch.address, toWei(String(0.001)), { from:userTwo })
-  //     // deposit
-  //     await fetch.depositETHAndERC20(true, toWei(String(0.001)), { from:userTwo, value:toWei(String(0.001)) })
-  //     // user 2 get shares
-  //     assert.notEqual(Number(await stake.balanceOf(userTwo)), 0)
-  //   })
-  //
-  //   it('token fetch can handle many deposits ', async function() {
-  //     // approve token
-  //     await token.approve(fetch.address, toWei(String(100)), { from:userOne })
-  //
-  //     for(let i=0; i<100;i++){
-  //       const sharesBefore = Number(await stake.balanceOf(userOne))
-  //       await fetch.depositETHAndERC20(true, toWei(String(0.01)), { from:userOne, value:toWei(String(0.01)) })
-  //       assert.isTrue(
-  //         Number(await stake.balanceOf(userOne)) > sharesBefore
-  //       )
-  //     }
-  //   })
-  // })
+    it('WETH in Router correct', async function() {
+      assert.equal(
+        String(await pancakeRouter.WETH()).toLowerCase(),
+        String(weth.address).toLowerCase(),
+      )
+    })
 
-  // describe('CLAIM ABLE token fetch DEPOSIT ONLY BNB', function() {
-  //   it('Convert input to pool and stake via token fetch and fetch send all shares and remains back to user', async function() {
-  //     // user two not hold any pool before deposit
-  //     assert.equal(Number(await pair.balanceOf(userTwo)), 0)
-  //     // stake don't have any pool yet
-  //     assert.equal(Number(await pair.balanceOf(stake.address)), 0)
-  //     // deposit
-  //     await fetch.deposit(true, { from:userTwo, value:toWei(String(1)) })
-  //     // fetch send all pool
-  //     assert.equal(Number(await pair.balanceOf(fetch.address)), 0)
-  //     // fetch send all shares
-  //     assert.equal(Number(await stake.balanceOf(fetch.address)), 0)
-  //     // fetch send all ETH remains
-  //     assert.equal(Number(await web3.eth.getBalance(fetch.address)), 0)
-  //     // fetch send all WETH remains
-  //     assert.equal(Number(await weth.balanceOf(fetch.address)), 0)
-  //     // fetch send all token
-  //     assert.equal(Number(await token.balanceOf(fetch.address)), 0)
-  //     // stake should receive pool
-  //     assert.notEqual(Number(await pair.balanceOf(stake.address)), 0)
-  //     // user should receive token shares
-  //     assert.notEqual(Number(await stake.balanceOf(userTwo)), 0)
-  //   })
-  //
-  //   it('User can withdraw converted pool via fetch from vault', async function() {
-  //     // user not hold any pool
-  //     assert.equal(Number(await pair.balanceOf(userTwo)), 0)
-  //     // deposit
-  //     await fetch.deposit(true, { from:userTwo, value:toWei(String(1)) })
-  //     // shares should be equal to pool depsoit
-  //     const staked = await pair.balanceOf(stake.address)
-  //     const shares = await stake.balanceOf(userTwo)
-  //     // staked and shares should be equal
-  //     assert.equal(Number(shares), Number(staked))
-  //     // withdraw
-  //     await stake.withdraw(shares, { from:userTwo })
-  //     // vault should burn shares
-  //     assert.equal(await stake.balanceOf(userTwo), 0)
-  //     // stake send all tokens
-  //     assert.equal(Number(await pair.balanceOf(stake.address)), 0)
-  //     // vault should send user token
-  //     assert.equal(
-  //       Number(await pair.balanceOf(userTwo)),
-  //       Number(staked)
-  //     )
-  //   })
-  //
-  //   it('User claim correct rewards and pool amount after exit', async function() {
-  //     // user not hold any pool
-  //     assert.equal(Number(await pair.balanceOf(userTwo)), 0)
-  //     // deposit
-  //     await fetch.deposit(true, { from:userTwo, value:toWei(String(1)) })
-  //     // get staked amount
-  //     const staked = await pair.balanceOf(stake.address)
-  //     // staked should be more than 0
-  //     assert.isTrue(staked > 0)
-  //     // clear user balance
-  //     await token.transfer(userOne, await token.balanceOf(userTwo), {from:userTwo})
-  //     assert.equal(await token.balanceOf(userTwo), 0)
-  //
-  //     await timeMachine.advanceTimeAndBlock(duration.days(31))
-  //     // estimate rewards
-  //     const estimateReward = await stake.earned(userTwo)
-  //     // get user shares
-  //     const shares = await stake.balanceOf(userTwo)
-  //     // withdraw
-  //     await stake.exit({ from:userTwo })
-  //     // user should get reward
-  //     assert.equal(Number(await token.balanceOf(userTwo)), Number(estimateReward))
-  //     // user get pool
-  //     assert.equal(Number(await pair.balanceOf(userTwo)), staked)
-  //     // stake send all address
-  //     assert.equal(Number(await pair.balanceOf(stake.address)), 0)
-  //   })
-  //
-  //   it('Claim rewards calculates correct for a few users after exit ', async function() {
-  //     // user not hold any pool
-  //     assert.equal(Number(await pair.balanceOf(userTwo)), 0)
-  //
-  //     // deposit form user 2
-  //     await fetch.deposit(true, { from:userTwo, value:toWei(String(1)) })
-  //     // clear user 2 balance
-  //     await token.transfer(userOne, await token.balanceOf(userTwo), {from:userTwo})
-  //     assert.equal(await token.balanceOf(userTwo), 0)
-  //
-  //     // deposit form user 3
-  //     await fetch.deposit(true, { from:userThree, value:toWei(String(1)) })
-  //     // clear user 3 balance
-  //     await token.transfer(userOne, await token.balanceOf(userThree), {from:userThree})
-  //     assert.equal(await token.balanceOf(userThree), 0)
-  //
-  //     // increase time
-  //     await timeMachine.advanceTimeAndBlock(duration.days(31))
-  //
-  //     // estimate rewards
-  //     const estimateRewardTwo = await stake.earned(userTwo)
-  //     const estimateRewardThree = await stake.earned(userThree)
-  //
-  //     // check rewards
-  //     assert.isTrue(estimateRewardTwo > toWei(String(0.5)))
-  //     assert.isTrue(estimateRewardThree > toWei(String(0.49)))
-  //
-  //     // withdraw
-  //     await stake.exit({ from:userTwo })
-  //     await stake.exit({ from:userThree })
-  //
-  //     // users should get reward
-  //     assert.equal(Number(await token.balanceOf(userTwo)), Number(estimateRewardTwo))
-  //     assert.equal(Number(await token.balanceOf(userThree)), Number(estimateRewardThree))
-  //   })
-  //
-  //   it('token fetch can handle big deposit and after this users can continue do many small deposits ', async function() {
-  //     // user 1 not hold any shares
-  //     assert.equal(Number(await stake.balanceOf(userOne)), 0)
-  //     // deposit form user 1
-  //     await fetch.deposit(true, { from:userOne, value:toWei(String(500)) })
-  //     // user 1 get shares
-  //     assert.notEqual(Number(await stake.balanceOf(userOne)), 0)
-  //
-  //     // user 2 not hold any shares
-  //     assert.equal(Number(await stake.balanceOf(userTwo)), 0)
-  //     // deposit form user 2
-  //     await fetch.deposit(true, { from:userTwo, value:toWei(String(0.001)) })
-  //     // user 2 get shares
-  //     assert.notEqual(Number(await stake.balanceOf(userTwo)), 0)
-  //   })
-  //
-  //   it('token fetch can handle many deposits ', async function() {
-  //     for(let i=0; i<100;i++){
-  //       const sharesBefore = Number(await stake.balanceOf(userOne))
-  //       await fetch.deposit(true, { from:userOne, value:toWei(String(0.01)) })
-  //       assert.isTrue(
-  //         Number(await stake.balanceOf(userOne)) > sharesBefore
-  //       )
-  //     }
-  //   })
-  // })
+    it('Correct init token supply', async function() {
+      assert.equal(
+        await token.totalSupply(),
+        toWei(String(100000)),
+      )
+    })
+
+    it('Correct init claim Stake', async function() {
+      assert.equal(await stake.rewardsToken(), token.address)
+      assert.equal(await stake.stakingToken(), pair.address)
+    })
+    it('token should be added in LD DEX', async function() {
+      assert.equal(await pair.totalSupply(), toWei(String(500)))
+    })
+  })
+
+  describe('token', function() {
+    it('Can be burned', async function() {
+      assert.equal(Number(await token.totalSupply()), toWei(String(100000)))
+      await token.burn(toWei(String(50000)))
+      assert.equal(Number(await token.totalSupply()), toWei(String(50000)))
+    })
+  })
+
+  describe('CLAIM ABLE token fetch WITH DEPOSIT WITH token', function() {
+    it('Convert input to pool and stake via token fetch and fetch send all shares and remains back to user', async function() {
+      // user two not hold any pool before deposit
+      assert.equal(Number(await pair.balanceOf(userTwo)), 0)
+      // stake don't have any pool yet
+      assert.equal(Number(await pair.balanceOf(stake.address)), 0)
+      // approve token
+      await token.approve(fetch.address, toWei(String(0.1)), { from:userTwo })
+      // deposit
+      await fetch.depositETHAndERC20(true, toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
+      // fetch send all pool
+      assert.equal(Number(await pair.balanceOf(fetch.address)), 0)
+      // fetch send all shares
+      assert.equal(Number(await stake.balanceOf(fetch.address)), 0)
+      // fetch send all ETH remains
+      assert.equal(Number(await web3.eth.getBalance(fetch.address)), 0)
+      // fetch send all WETH remains
+      assert.equal(Number(await weth.balanceOf(fetch.address)), 0)
+      // fetch send all token
+      assert.equal(Number(await token.balanceOf(fetch.address)), 0)
+      // stake should receive pool
+      assert.notEqual(Number(await pair.balanceOf(stake.address)), 0)
+      // user should receive token shares
+      assert.notEqual(Number(await stake.balanceOf(userTwo)), 0)
+    })
+
+    it('User can withdraw converted pool via fetch from vault', async function() {
+      // user not hold any pool
+      assert.equal(Number(await pair.balanceOf(userTwo)), 0)
+      // approve token
+      await token.approve(fetch.address, toWei(String(0.1)), { from:userTwo })
+      // deposit
+      await fetch.depositETHAndERC20(true, toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
+      // shares should be equal to pool depsoit
+      const staked = await pair.balanceOf(stake.address)
+      const shares = await stake.balanceOf(userTwo)
+      // staked and shares should be equal
+      assert.equal(Number(shares), Number(staked))
+      // withdraw
+      await stake.withdraw(shares, { from:userTwo })
+      // vault should burn shares
+      assert.equal(await stake.balanceOf(userTwo), 0)
+      // stake send all tokens
+      assert.equal(Number(await pair.balanceOf(stake.address)), 0)
+      // vault should send user token
+      assert.equal(
+        Number(await pair.balanceOf(userTwo)),
+        Number(staked)
+      )
+    })
+
+    it('User claim correct rewards and pool amount after exit', async function() {
+      // user not hold any pool
+      assert.equal(Number(await pair.balanceOf(userTwo)), 0)
+      // approve token
+      await token.approve(fetch.address, toWei(String(0.1)), { from:userTwo })
+      // deposit
+      await fetch.depositETHAndERC20(true, toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
+      // get staked amount
+      const staked = await pair.balanceOf(stake.address)
+      // staked should be more than 0
+      assert.isTrue(staked > 0)
+      // clear user balance
+      await token.transfer(userOne, await token.balanceOf(userTwo), {from:userTwo})
+      assert.equal(await token.balanceOf(userTwo), 0)
+
+      await timeMachine.advanceTimeAndBlock(duration.days(31))
+      // estimate rewards
+      const estimateReward = await stake.earned(userTwo)
+      // get user shares
+      const shares = await stake.balanceOf(userTwo)
+      // withdraw
+      await stake.exit({ from:userTwo })
+      // user should get reward
+      assert.equal(Number(await token.balanceOf(userTwo)), Number(estimateReward))
+      // user get pool
+      assert.equal(Number(await pair.balanceOf(userTwo)), staked)
+      // stake send all address
+      assert.equal(Number(await pair.balanceOf(stake.address)), 0)
+    })
+
+    it('Claim rewards calculates correct for a few users after exit ', async function() {
+      // user not hold any pool
+      assert.equal(Number(await pair.balanceOf(userTwo)), 0)
+
+      // deposit form user 2
+      // approve token
+      await token.approve(fetch.address, toWei(String(0.1)), { from:userTwo })
+      // deposit
+      await fetch.depositETHAndERC20(true, toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
+      // clear user 2 balance
+      await token.transfer(userOne, await token.balanceOf(userTwo), {from:userTwo})
+      assert.equal(await token.balanceOf(userTwo), 0)
+
+      // deposit form user 3
+      // approve token
+      await token.approve(fetch.address, toWei(String(0.1)), { from:userThree })
+      // deposit
+      await fetch.depositETHAndERC20(true, toWei(String(0.1)), { from:userThree, value:toWei(String(0.1)) })
+      // clear user 3 balance
+      await token.transfer(userOne, await token.balanceOf(userThree), {from:userThree})
+      assert.equal(await token.balanceOf(userThree), 0)
+
+      // increase time
+      await timeMachine.advanceTimeAndBlock(duration.days(31))
+
+      // estimate rewards
+      const estimateRewardTwo = await stake.earned(userTwo)
+      const estimateRewardThree = await stake.earned(userThree)
+
+      assert.isTrue(estimateRewardTwo > toWei(String(0.49)))
+      assert.isTrue(estimateRewardThree > toWei(String(0.49)))
+
+      // withdraw
+      await stake.exit({ from:userTwo })
+      await stake.exit({ from:userThree })
+
+      // users should get reward
+      assert.equal(Number(await token.balanceOf(userTwo)), Number(estimateRewardTwo))
+      assert.equal(Number(await token.balanceOf(userThree)), Number(estimateRewardThree))
+    })
+
+    it('token fetch can handle big deposit and after this users can continue do many small deposits ', async function() {
+      // user 1 not hold any shares
+      assert.equal(Number(await stake.balanceOf(userOne)), 0)
+      // deposit form user 1
+      // approve token
+      await token.approve(fetch.address, toWei(String(500)), { from:userOne })
+      // deposit
+      await fetch.depositETHAndERC20(true, toWei(String(500)), { from:userOne, value:toWei(String(500)) })
+      // user 1 get shares
+      assert.notEqual(Number(await stake.balanceOf(userOne)), 0)
+
+      // user 2 not hold any shares
+      assert.equal(Number(await stake.balanceOf(userTwo)), 0)
+      // deposit form user 2
+      // approve token
+      await token.approve(fetch.address, toWei(String(0.001)), { from:userTwo })
+      // deposit
+      await fetch.depositETHAndERC20(true, toWei(String(0.001)), { from:userTwo, value:toWei(String(0.001)) })
+      // user 2 get shares
+      assert.notEqual(Number(await stake.balanceOf(userTwo)), 0)
+    })
+
+    it('token fetch can handle many deposits ', async function() {
+      // approve token
+      await token.approve(fetch.address, toWei(String(100)), { from:userOne })
+
+      for(let i=0; i<100;i++){
+        const sharesBefore = Number(await stake.balanceOf(userOne))
+        await fetch.depositETHAndERC20(true, toWei(String(0.01)), { from:userOne, value:toWei(String(0.01)) })
+        assert.isTrue(
+          Number(await stake.balanceOf(userOne)) > sharesBefore
+        )
+      }
+    })
+  })
+
+  describe('CLAIM ABLE token fetch DEPOSIT ONLY BNB', function() {
+    it('Convert input to pool and stake via token fetch and fetch send all shares and remains back to user', async function() {
+      // user two not hold any pool before deposit
+      assert.equal(Number(await pair.balanceOf(userTwo)), 0)
+      // stake don't have any pool yet
+      assert.equal(Number(await pair.balanceOf(stake.address)), 0)
+      // deposit
+      await fetch.deposit(true, { from:userTwo, value:toWei(String(1)) })
+      // fetch send all pool
+      assert.equal(Number(await pair.balanceOf(fetch.address)), 0)
+      // fetch send all shares
+      assert.equal(Number(await stake.balanceOf(fetch.address)), 0)
+      // fetch send all ETH remains
+      assert.equal(Number(await web3.eth.getBalance(fetch.address)), 0)
+      // fetch send all WETH remains
+      assert.equal(Number(await weth.balanceOf(fetch.address)), 0)
+      // fetch send all token
+      assert.equal(Number(await token.balanceOf(fetch.address)), 0)
+      // stake should receive pool
+      assert.notEqual(Number(await pair.balanceOf(stake.address)), 0)
+      // user should receive token shares
+      assert.notEqual(Number(await stake.balanceOf(userTwo)), 0)
+    })
+
+    it('User can withdraw converted pool via fetch from vault', async function() {
+      // user not hold any pool
+      assert.equal(Number(await pair.balanceOf(userTwo)), 0)
+      // deposit
+      await fetch.deposit(true, { from:userTwo, value:toWei(String(1)) })
+      // shares should be equal to pool depsoit
+      const staked = await pair.balanceOf(stake.address)
+      const shares = await stake.balanceOf(userTwo)
+      // staked and shares should be equal
+      assert.equal(Number(shares), Number(staked))
+      // withdraw
+      await stake.withdraw(shares, { from:userTwo })
+      // vault should burn shares
+      assert.equal(await stake.balanceOf(userTwo), 0)
+      // stake send all tokens
+      assert.equal(Number(await pair.balanceOf(stake.address)), 0)
+      // vault should send user token
+      assert.equal(
+        Number(await pair.balanceOf(userTwo)),
+        Number(staked)
+      )
+    })
+
+    it('User claim correct rewards and pool amount after exit', async function() {
+      // user not hold any pool
+      assert.equal(Number(await pair.balanceOf(userTwo)), 0)
+      // deposit
+      await fetch.deposit(true, { from:userTwo, value:toWei(String(1)) })
+      // get staked amount
+      const staked = await pair.balanceOf(stake.address)
+      // staked should be more than 0
+      assert.isTrue(staked > 0)
+      // clear user balance
+      await token.transfer(userOne, await token.balanceOf(userTwo), {from:userTwo})
+      assert.equal(await token.balanceOf(userTwo), 0)
+
+      await timeMachine.advanceTimeAndBlock(duration.days(31))
+      // estimate rewards
+      const estimateReward = await stake.earned(userTwo)
+      // get user shares
+      const shares = await stake.balanceOf(userTwo)
+      // withdraw
+      await stake.exit({ from:userTwo })
+      // user should get reward
+      assert.equal(Number(await token.balanceOf(userTwo)), Number(estimateReward))
+      // user get pool
+      assert.equal(Number(await pair.balanceOf(userTwo)), staked)
+      // stake send all address
+      assert.equal(Number(await pair.balanceOf(stake.address)), 0)
+    })
+
+    it('Claim rewards calculates correct for a few users after exit ', async function() {
+      // user not hold any pool
+      assert.equal(Number(await pair.balanceOf(userTwo)), 0)
+
+      // deposit form user 2
+      await fetch.deposit(true, { from:userTwo, value:toWei(String(1)) })
+      // clear user 2 balance
+      await token.transfer(userOne, await token.balanceOf(userTwo), {from:userTwo})
+      assert.equal(await token.balanceOf(userTwo), 0)
+
+      // deposit form user 3
+      await fetch.deposit(true, { from:userThree, value:toWei(String(1)) })
+      // clear user 3 balance
+      await token.transfer(userOne, await token.balanceOf(userThree), {from:userThree})
+      assert.equal(await token.balanceOf(userThree), 0)
+
+      // increase time
+      await timeMachine.advanceTimeAndBlock(duration.days(31))
+
+      // estimate rewards
+      const estimateRewardTwo = await stake.earned(userTwo)
+      const estimateRewardThree = await stake.earned(userThree)
+
+      // check rewards
+      assert.isTrue(estimateRewardTwo > toWei(String(0.5)))
+      assert.isTrue(estimateRewardThree > toWei(String(0.49)))
+
+      // withdraw
+      await stake.exit({ from:userTwo })
+      await stake.exit({ from:userThree })
+
+      // users should get reward
+      assert.equal(Number(await token.balanceOf(userTwo)), Number(estimateRewardTwo))
+      assert.equal(Number(await token.balanceOf(userThree)), Number(estimateRewardThree))
+    })
+
+    it('token fetch can handle big deposit and after this users can continue do many small deposits ', async function() {
+      // user 1 not hold any shares
+      assert.equal(Number(await stake.balanceOf(userOne)), 0)
+      // deposit form user 1
+      await fetch.deposit(true, { from:userOne, value:toWei(String(500)) })
+      // user 1 get shares
+      assert.notEqual(Number(await stake.balanceOf(userOne)), 0)
+
+      // user 2 not hold any shares
+      assert.equal(Number(await stake.balanceOf(userTwo)), 0)
+      // deposit form user 2
+      await fetch.deposit(true, { from:userTwo, value:toWei(String(0.001)) })
+      // user 2 get shares
+      assert.notEqual(Number(await stake.balanceOf(userTwo)), 0)
+    })
+
+    it('token fetch can handle many deposits ', async function() {
+      for(let i=0; i<100;i++){
+        const sharesBefore = Number(await stake.balanceOf(userOne))
+        await fetch.deposit(true, { from:userOne, value:toWei(String(0.01)) })
+        assert.isTrue(
+          Number(await stake.balanceOf(userOne)) > sharesBefore
+        )
+      }
+    })
+  })
   //END
 })
