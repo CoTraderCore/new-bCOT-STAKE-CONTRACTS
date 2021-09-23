@@ -16,10 +16,8 @@ contract Fetch is Ownable {
   using SafeMath for uint256;
   address public WETH;
   address public pancakeRouter;
-  address public coSwapRouter;
 
-  address public stakeClaimAble;
-  address public stakeNonClaimAble;
+  address public stake;
 
   address public token;
   address public uniPair;
@@ -32,32 +30,24 @@ contract Fetch is Ownable {
   /**
   * @dev constructor
   *
-  * @param _stakeClaimAble        address of claim able stake
-  * @param _stakeNonClaimAble     address of non claim able stake
+  * @param _stake                 address of claim able stake
   * @param _token                 address of token token
   * @param _uniPair               address of pool pair
-  * @param _tokenSale             address of token sale
   */
   constructor(
     address _WETH,
     address _pancakeRouter,
-    address _coSwapRouter,
-    address _stakeClaimAble,
-    address _stakeNonClaimAble,
+    address _stake,
     address _token,
-    address _uniPair,
-    address _tokenSale
+    address _uniPair
     )
     public
   {
     WETH = _WETH;
     pancakeRouter = _pancakeRouter;
-    coSwapRouter = _coSwapRouter;
-    stakeClaimAble = _stakeClaimAble;
-    stakeNonClaimAble = _stakeNonClaimAble;
+    stake = _stake;
     token = _token;
     uniPair = _uniPair;
-    tokenSale = _tokenSale;
   }
 
   // deposit only ETH
@@ -88,11 +78,9 @@ contract Fetch is Ownable {
   /**
   * @dev convert deposited ETH into pool and then stake
   */
-  function _depositFor(bool _isClaimAbleStake, address receiver) internal {
+  function _depositFor(address receiver) internal {
     // define stake address
-    address stakeAddress = _isClaimAbleStake
-    ? stakeClaimAble
-    : stakeNonClaimAble;
+    address stakeAddress = stake;
 
     // check if token received
     uint256 tokenReceived = IERC20(token).balanceOf(address(this));
@@ -155,20 +143,7 @@ contract Fetch is Ownable {
  function swapETHInput(uint256 input) internal {
    // determining the portion of the incoming ETH to be converted to the ERC20 Token
    uint256 conversionPortion = input.mul(505).div(1000);
-
-   (uint256 ethToPancake,
-    uint256 ethToCoSwap,
-    uint256 ethToSale) = calculateToSplit(conversionPortion);
-
-   // SPLIT SALE with Pancake, CoSwap and Sale
-   if(ethToPancake > 0)
-     swapETHViaDEX(pancakeRouter, ethToPancake);
-
-   if(ethToCoSwap > 0)
-     swapETHViaDEX(coSwapRouter, ethToCoSwap);
-
-   if(ethToSale > 0)
-     ISale(tokenSale).buy.value(ethToSale)();
+   swapETHViaDEX(pancakeRouter, conversionPortion);     
  }
 
  // helper for swap via dex
@@ -186,38 +161,4 @@ contract Fetch is Ownable {
    );
  }
 
- /**
- * @dev return split % amount of input
- */
- function calculateToSplit(uint256 ethInput)
-   public
-   view
-   returns(uint256 ethToPancake, uint256 ethToCoSwap, uint256 ethToSale)
- {
-   ethToPancake = ethInput.div(100).mul(pancakeSplit);
-   ethToCoSwap = ethInput.div(100).mul(coSwapSplit);
-   ethToSale = ethInput.div(100).mul(saleSplit);
- }
-
- /**
- * @dev allow owner set new split
- */
- function updateSplit(
-   uint256 _pancakeSplit,
-   uint256 _coSwapSplit,
-   uint256 _saleSplit
- )
-   external
-   onlyOwner
- {
-   uint256 totalPercentage = _pancakeSplit + _coSwapSplit + _saleSplit;
-   require(totalPercentage == 100, "wrong total split");
-
-   pancakeSplit = _pancakeSplit;
-   coSwapSplit = _coSwapSplit;
-   saleSplit = _saleSplit;
- }
-
- // TODO BUY via split
- // function buy()
 }
