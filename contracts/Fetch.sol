@@ -23,15 +23,11 @@ contract Fetch is Ownable {
   address public uniPair;
   address public tokenSale;
 
-  uint256 public pancakeSplit = 50;
-  uint256 public coSwapSplit = 25;
-  uint256 public saleSplit = 25;
-
   /**
   * @dev constructor
   *
   * @param _stake                 address of claim able stake
-  * @param _token                 address of token token
+  * @param _token                 address of underlying token
   * @param _uniPair               address of pool pair
   */
   constructor(
