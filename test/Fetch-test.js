@@ -147,6 +147,34 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
     })
   })
 
+
+  describe('NFT', function() {
+    it('NFT claim NOT works without fetch', async function() {
+      await stake.claimNFT(0, { from:userTwo }).should.be.rejectedWith(EVMRevert)
+      assert.equal(await nft.balanceOf(userTwo), 0)
+    })
+
+    it('NFT claim works after fetch Deposit', async function() {
+      assert.equal(await nft.balanceOf(userTwo), 0)
+      // deposit
+      await fetch.deposit({ from:userTwo, value:toWei(String(1)) })
+      // claim
+      await stake.claimNFT(0, { from:userTwo })
+      assert.equal(await nft.balanceOf(userTwo), 1)
+    })
+
+    it('NFT claim works after fetch depositETHAndERC20', async function() {
+      assert.equal(await nft.balanceOf(userTwo), 0)
+      await token.approve(fetch.address, toWei(String(0.1)), { from:userTwo })
+      await fetch.depositETHAndERC20(toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
+      // deposit
+      await fetch.deposit({ from:userTwo, value:toWei(String(1)) })
+      // claim
+      await stake.claimNFT(0, { from:userTwo })
+      assert.equal(await nft.balanceOf(userTwo), 1)
+    })
+  })
+
   describe('CLAIM ABLE token fetch WITH DEPOSIT WITH token', function() {
     it('Convert input to pool and stake via token fetch and fetch send all shares and remains back to user', async function() {
       // user two not hold any pool before deposit
