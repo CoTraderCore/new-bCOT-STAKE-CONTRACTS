@@ -4,10 +4,10 @@ import "./interfaces/IUniswapV2Router02.sol";
 import "./interfaces/IWETH.sol";
 import "./interfaces/ISale.sol";
 import "./interfaces/IStake.sol";
-import "./openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import "./openzeppelin-contracts/contracts/math/SafeMath.sol";
-import "./openzeppelin-contracts/contracts/token/ERC20/SafeERC20.sol";
-import "./openzeppelin-contracts/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 
 contract Fetch is Ownable {

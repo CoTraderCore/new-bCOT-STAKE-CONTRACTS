@@ -1,11 +1,11 @@
 pragma solidity ^0.6.2;
 
-import "../openzeppelin-contracts/contracts/math/Math.sol";
-import "../openzeppelin-contracts/contracts/math/SafeMath.sol";
-import "../openzeppelin-contracts/contracts/token/ERC20/SafeERC20.sol";
-import "../openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import "../openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
-import "../interfaces/IBurn.sol";
+import "@openzeppelin/contracts/math/Math.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "./interfaces/INFT.sol";
 
 contract Owned {
     address public owner;
@@ -95,17 +95,26 @@ contract TokenWrapper is ReentrancyGuard {
 }
 
 
-contract StakeClaim is TokenWrapper, RewardsDistributionRecipient {
+contract Stake is TokenWrapper, RewardsDistributionRecipient {
+    // Stake program
     IERC20 public rewardsToken;
-
     uint256 public DURATION;
-
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
+
+    // NFT program
+    INFT public NFT;
+    uint256 public maxAmountNFTForClaim;
+    uint256 public totalClaimedNFT;
+    uint256 public nftPrice;
+    address public nftETHReceiver;
+
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
+    mapping(address => bool) public claimedNFT;
+    mapping(address => bool) public participantOfStake;
 
     event RewardAdded(uint256 reward);
     event Staked(address indexed user, uint256 amount);
@@ -116,10 +125,19 @@ contract StakeClaim is TokenWrapper, RewardsDistributionRecipient {
         address _owner,
         address _rewardsToken,
         address _stakingToken,
-        uint256 _DURATION
-    ) public TokenWrapper(_stakingToken) Owned(_owner) {
+        address _NFT,
+        uint256 _DURATION,
+        uint256 _maxAmountNFTForClaim,
+        uint256 _nftPrice,
+        address _nftETHReceiver
+    )
+    public TokenWrapper(_stakingToken) Owned(_owner) {
         rewardsToken = IERC20(_rewardsToken);
+        NFT = INFT(_NFT);
         DURATION = _DURATION;
+        maxAmountNFTForClaim = _maxAmountNFTForClaim;
+        nftPrice = _nftPrice;
+        nftETHReceiver = _nftETHReceiver;
     }
 
     modifier updateReward(address account) {
@@ -157,6 +175,7 @@ contract StakeClaim is TokenWrapper, RewardsDistributionRecipient {
     function stake(uint256 amount) public updateReward(msg.sender) {
         require(amount > 0, "Cannot stake 0");
         super.stakePool(amount);
+        participantOfStake[msg.sender] = true;
         emit Staked(msg.sender, amount);
     }
 
@@ -200,9 +219,29 @@ contract StakeClaim is TokenWrapper, RewardsDistributionRecipient {
         emit RewardAdded(reward);
     }
 
-    // for case if stake leave some remains
-    function burnRemainsRewards() external onlyRewardsDistribution {
-      require(totalSupply() == 0, "Shares not empty");
-      IBurn(address(rewardsToken)).burn(rewardsToken.balanceOf(address(this)));
+    // for case if rewards stuck rewards distribution can move rewards to new contract
+    function inCaseRewardsStuck() external onlyRewardsDistribution {
+      rewardsToken.transfer(rewardsDistribution, rewardsToken.balanceOf(address(this)));
+    }
+
+
+    // NFT Progarm
+
+    function claimNFT(uint256 _nftIndex) external {
+      require(participantOfStake[msg.sender], "Not participant");
+      require(!claimedNFT[msg.sender], "Alredy claimed");
+      require(!NFT.isIndexUsed(_nftIndex), "Index used");
+      require(totalClaimedNFT <= maxAmountNFTForClaim, "Claim finished");
+
+      NFT.createNewFor(msg.sender, _nftIndex);
+      claimedNFT[msg.sender] = true;
+      totalClaimedNFT = totalClaimedNFT + 1;
+    }
+
+    function buyNFT(uint256 _nftIndex) external payable {
+      require(msg.value == nftPrice, "Influence ETH");
+      require(!NFT.isIndexUsed(_nftIndex), "Index used");
+      NFT.createNewFor(msg.sender, _nftIndex);
+      payable(nftETHReceiver).transfer(msg.value);
     }
 }
