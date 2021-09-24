@@ -167,8 +167,6 @@ contract('Fetch-test', function([userOne, userTwo, userThree]) {
       assert.equal(await nft.balanceOf(userTwo), 0)
       await token.approve(fetch.address, toWei(String(0.1)), { from:userTwo })
       await fetch.depositETHAndERC20(toWei(String(0.1)), { from:userTwo, value:toWei(String(0.1)) })
-      // deposit
-      await fetch.deposit({ from:userTwo, value:toWei(String(1)) })
       // claim
       await stake.claimNFT(0, { from:userTwo })
       assert.equal(await nft.balanceOf(userTwo), 1)
