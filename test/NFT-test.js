@@ -65,8 +65,8 @@ contract('NFT', function([userOne, userTwo, userThree]) {
     })
   })
 
-  describe('transfer NFT', function() {
-    it('user can transfer all created NFT up to max index ', async function() {
+  describe('Transfer NFT', function() {
+    it('User can transfer all created NFT up to max index ', async function() {
       for(let i = 0; i < nftsSupply; i++){
         await nft.createNewFor(userOne, i)
         await nft.transfer(userTwo, i)
@@ -75,28 +75,20 @@ contract('NFT', function([userOne, userTwo, userThree]) {
   })
 
   describe('Offer and Buy NFT', function() {
-    it('Owner can offer nft after all nftires are created', async function() {
-      for(let i = 0; i<nftsSupply; i++){
-        await nft.createNewFor(userOne, i)
-      }
-
+    it('Owner can offer nft after create', async function() {
+      await nft.createNewFor(userOne, 0)
+      assert.equal(await nft.ownerOf(0), userOne)
       await nft.offerForSale(0, toWei("0.00001"))
     })
 
-    it('Not owner can NOT offer nft after all nftires are created', async function() {
-      for(let i = 0; i<nftsSupply; i++){
-        await nft.createNewFor(userOne, i)
-      }
-
+    it('Not owner can NOT offer nft', async function() {
+      await nft.createNewFor(userOne, 0)
       await nft.offerForSale(0, toWei("0.00001"), { from:userTwo })
       .should.be.rejectedWith(EVMRevert)
     })
 
     it('User can not buy with less than min eth require', async function() {
-      for(let i = 0; i<nftsSupply; i++){
-        await nft.createNewFor(userOne, i)
-      }
-
+      await nft.createNewFor(userOne, 0)
       await nft.offerForSale(0, toWei("1"))
       await nft.buy(0, { from:userTwo, value:toWei("0.00001") })
       .should.be.rejectedWith(EVMRevert)
@@ -105,10 +97,7 @@ contract('NFT', function([userOne, userTwo, userThree]) {
     })
 
     it('User can buy with min eth require', async function() {
-      for(let i = 0; i<nftsSupply; i++){
-        await nft.createNewFor(userOne, i)
-      }
-
+      await nft.createNewFor(userOne, 0)
       assert.equal(await nft.ownerOf(0), userOne)
 
       await nft.offerForSale(0, toWei("1"))
@@ -118,10 +107,7 @@ contract('NFT', function([userOne, userTwo, userThree]) {
     })
 
     it('User A can not buy with min eth require, if owner offer for user B', async function() {
-      for(let i = 0; i<nftsSupply; i++){
-        await nft.createNewFor(userOne, i)
-      }
-
+      await nft.createNewFor(userOne, 0)
       assert.equal(await nft.ownerOf(0), userOne)
 
       await nft.offerForSaleToAddress(0, toWei("1"), userThree)
@@ -135,10 +121,7 @@ contract('NFT', function([userOne, userTwo, userThree]) {
 
 
     it('Saller address and platform address receive ETH from sell', async function() {
-
-      for(let i = 0; i<nftsSupply; i++){
-        await nft.createNewFor(userThree, i, { from:userOne })
-      }
+      await nft.createNewFor(userThree, 0, { from:userOne })
 
       const platformBalanceBefore = await web3.eth.getBalance(platformAddress)
       const sallerBalanceBefore = await web3.eth.getBalance(userThree)
@@ -166,9 +149,7 @@ contract('NFT', function([userOne, userTwo, userThree]) {
     })
 
     it('User can not buy the same nftire twice', async function() {
-      for(let i = 0; i<nftsSupply; i++){
-        await nft.createNewFor(userThree, i, { from:userOne })
-      }
+      await nft.createNewFor(userThree, 0, { from:userOne })
 
       const platformBalanceBefore = await web3.eth.getBalance(platformAddress)
       const sallerBalanceBefore = await web3.eth.getBalance(userThree)
