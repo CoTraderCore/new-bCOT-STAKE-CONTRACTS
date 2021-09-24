@@ -68,6 +68,7 @@ contract DEXFormula {
     }
   }
 
+  // Get rate between 2 tokens directly
   function routerRatio(address from, address to, uint256 fromAmount) public view returns (uint256){
     address[] memory path = new address[](2);
     path[0] = from;
