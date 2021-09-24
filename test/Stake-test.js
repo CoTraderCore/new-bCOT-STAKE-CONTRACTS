@@ -132,7 +132,7 @@ contract('Stake', function([userOne, userTwo, userThree]) {
     })
 
     it('User can not buy NFT with not enough amount of ETH', async function() {
-      await stake.buyNFT(0, {from:userTwo, value:1})
+      await stake.buyNFT(0, {from:userTwo, value:Number(NFTPrice) / 2})
       .should.be.rejectedWith(EVMRevert)
     })
 
